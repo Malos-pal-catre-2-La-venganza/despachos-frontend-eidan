@@ -1,0 +1,35 @@
+name: CI/CD Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ACCOUNT_ID: "638105730420"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login a Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build y Push frontend
+        run: |
+          docker build -t despachos-frontend ./despachos-frontend-main
+          docker tag despachos-frontend:latest 638105730420.dkr.ecr.us-east-1.amazonaws.com/despachos-frontend:latest
+          docker push 638105730420.dkr.ecr.us-east-1.amazonaws.com/despachos-frontend:latest
